@@ -23,6 +23,7 @@ CC_ARGS:=-c -mz80 --peep-file $(LIB)/peep-rules.txt
 LD:=ihx2sms
 
 SRC_DIR:=src
+INC_DIR:=inc
 OUT_DIR:=out
 
 PROGRAM:=$(SRC_DIR)/main.ihx
@@ -35,7 +36,7 @@ OBJ:=$(SRC:.c=.rel)
 OBJS:=$(addprefix $(OUT_DIR)/, $(OBJ))
 
 SRC_DIR_LIST:= $(addprefix -I ,$(sort $(dir $(call rwildcard,$(SRC_DIR),*))))
-INC:=$(SRC_DIR_LIST) -I$(SRC_DIR) -I$(LIB)
+INC:=$(SRC_DIR_LIST) -I$(SRC_DIR) -I$(INC_DIR) -I$(LIB)
 
 BIN:=rom.sms
 EMULATOR:=meka $(shell pwd)/out/$(BIN)
