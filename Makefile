@@ -52,10 +52,10 @@ run: release
 prebuild:
 	@mkdir -p $(OUT_DIR)
 	@mkdir -p $(OUT_DIR)/$(SRC_DIR)
-	@echo -e $(info $(BOLD)$(YELLOW)-- Build $(BUILDTYPE) started$(CLEAR))
+	@echo -e "$(info $(BOLD)$(YELLOW)-- Build $(BUILDTYPE) started$(CLEAR))"
 
 postbuild:
-	@echo -e $(info $(BOLD)$(GREEN)-- Build finished!$(CLEAR))
+	@echo -e "$(BOLD)$(GREEN)-- Build finished!$(CLEAR)"
 
 .PHONY: clean
 
