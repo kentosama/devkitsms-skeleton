@@ -17,14 +17,20 @@ BOLD:=$(shell tput bold)
 CPUS?= $(shell nproc)
 MAKEFLAGS:= --jobs=$(CPUS)
 
-LIB:=/opt/toolchains/sms/devkit
+LIB_DIR:=/opt/toolchains/sms/devkit/lib
+SMSLIB_DIR:= $(LIB_DIR)/SMSlib
+SMSLIB:=$(SMSLIB_DIR)/SMSlib.lib
+PSGLIB_DIR:=$(LIB_DIR)/PSGlib
+PSGLIB:=$(PSGLIB_DIR)/PSGlib.rel
 CC:=sdcc
-CC_ARGS:=-c -mz80 --peep-file $(LIB)/peep-rules.txt
+CC_ARGS:=-c -mz80 --peep-file $(SMSLIB_DIR)/peep-rules.txt
 LD:=ihx2sms
 
 SRC_DIR:=src
 INC_DIR:=inc
+RES_DIR:=res
 OUT_DIR:=out
+
 
 PROGRAM:=$(SRC_DIR)/main.ihx
 
@@ -32,13 +38,17 @@ SRC:=$(wildcard $(SRC_DIR)/*.c)
 SRC_EXTRA_C:= $(wildcard $(SRC_DIR)/**/*.c)
 SRC+= $(SRC_EXTRA_C)
 
+# Ressources
+SRC+=$(wildcard $(RES_DIR)/*.c)
+
 OBJ:=$(SRC:.c=.rel)
 OBJS:=$(addprefix $(OUT_DIR)/, $(OBJ))
 
 SRC_DIR_LIST:= $(addprefix -I ,$(sort $(dir $(call rwildcard,$(SRC_DIR),*))))
-INC:=$(SRC_DIR_LIST) -I$(SRC_DIR) -I$(INC_DIR) -I$(LIB)
+INC:=$(SRC_DIR_LIST) -I$(SRC_DIR) -I$(RES_DIR) -I$(INC_DIR) -I$(PSGLIB_DIR) -I$(SMSLIB_DIR)
 
 BIN:=rom.sms
+EMULATOR_DIR:=/usr/local/games/meka
 EMULATOR:=meka $(shell pwd)/out/$(BIN)
 
 all: release
@@ -47,11 +57,10 @@ release: BUILDTYPE=release
 release: prebuild $(OUT_DIR)/$(BIN) postbuild
 
 run: release
-	@cd /usr/local/games/meka && $(EMULATOR)
+	@cd $(EMULATOR_DIR) && $(EMULATOR)
 
 prebuild:
 	@mkdir -p $(OUT_DIR)
-	@mkdir -p $(OUT_DIR)/$(SRC_DIR)
 	@echo -e "$(info $(BOLD)$(YELLOW)-- Build $(BUILDTYPE) started$(CLEAR))"
 
 postbuild:
@@ -63,9 +72,9 @@ clean:
 	@rm -R $(OUT_DIR)/*
 
 $(OUT_DIR)/$(BIN): $(OBJS)
-	$(CC) -o $(OUT_DIR)/$(PROGRAM) -mz80 --no-std-crt0 --data-loc 0xC000 $(LIB)/crt0_sms.rel $(OBJS) $(LIB)/SMSlib.lib
+	$(CC) -o $(OUT_DIR)/$(PROGRAM) -mz80 --no-std-crt0 --data-loc 0xC000 $(SMSLIB_DIR)/crt0_sms.rel $(OBJS) $(PSGLIB) $(SMSLIB)
 	$(LD) $(OUT_DIR)/$(PROGRAM) $(OUT_DIR)/${BIN}
 
 $(OUT_DIR)/%.rel: %.c
 	@mkdir -p $(@D)
-	$(CC) $(CC_ARGS) $(INC) -o $@ $^
+	$(CC) $(CC_ARGS) -o $@ $^
